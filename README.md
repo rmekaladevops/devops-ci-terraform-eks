@@ -9,6 +9,16 @@ This project demonstrates how to:
 
 📌 Tools Used: Terraform, EKS, GitHub Actions, Docker, Helm, Trivy and tfsec
 
+🔐 Required GitHub Secrets
+| Secret Name             | Purpose                              |
+| ----------------------- | ------------------------------------ |
+| `AWS_ACCESS_KEY_ID`     | AWS access for EKS auth              |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret for EKS auth              |
+| `DOCKER_USERNAME`       | DockerHub (or ECR) username          |
+| `DOCKER_PASSWORD`       | DockerHub (or ECR) password/token    |
+| `DOCKER_IMAGE`          | Docker image name (e.g., `user/app`) |
+
+
 #**Monitoring and Cost Tracking (Manual Setup)**
 
 Prometheus & Grafana (install with Helm)
