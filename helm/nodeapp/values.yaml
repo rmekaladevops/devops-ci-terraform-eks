@@ -1,0 +1,9 @@
+replicaCount: 2
+image:
+  repository: <YOUR_DOCKER_IMAGE>
+  pullPolicy: IfNotPresent
+  tag: "latest"
+service:
+  type: LoadBalancer
+  port: 80
+
