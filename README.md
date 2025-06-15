@@ -7,5 +7,5 @@ This project demonstrates how to:
 - Secure pipelines with Trivy and tfsec
 - Automate CI/CD using GitHub Actions
 
-📌 Tools Used: Terraform, EKS, GitHub Actions, Docker, Helm, Trivy
+📌 Tools Used: Terraform, EKS, GitHub Actions, Docker, Helm, Trivy and tfsec
 
