@@ -19,12 +19,58 @@ jobs:
         with:
           node-version: 18
 
+      # --------------------
+      # Run tfsec - Terraform Security Scan
+      # --------------------
+      - name: Install tfsec
+        run: |
+          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
+      - name: Run tfsec scan with retry
+        run: |
+          attempt=1
+          until [ $attempt -gt 3 ]
+          do
+            echo "Attempt $attempt: Running tfsec scan"
+            if tfsec ./terraform; then
+              echo "✅ tfsec scan passed"
+              break
+            else
+              echo "❌ tfsec failed, retrying in 10s..."
+              attempt=$((attempt+1))
+              sleep 10
+            fi
+          done
+          if [ $attempt -gt 3 ]; then
+            echo "❌ tfsec scan failed after 3 attempts"
+            exit 1
+          fi
+
+      # --------------------
+      # Build Docker Image
+      # --------------------
       - name: Build and Push Docker Image
         run: |
           docker build -t ${{ secrets.DOCKER_IMAGE }}:latest ./app
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker push ${{ secrets.DOCKER_IMAGE }}:latest
 
+      # --------------------
+      # Run Trivy - Container Vulnerability Scan
+      # --------------------
+      - name: Install Trivy
+        run: |
+          sudo apt-get install wget -y
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.2_Linux-64bit.deb
+          sudo dpkg -i trivy_0.50.2_Linux-64bit.deb
+
+      - name: Run Trivy Image Scan
+        run: |
+          trivy image --severity CRITICAL,HIGH ${{ secrets.DOCKER_IMAGE }}:latest || exit 1
+
+      # --------------------
+      # Configure AWS
+      # --------------------
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -36,7 +82,9 @@ jobs:
         run: |
           aws eks update-kubeconfig --name <your-cluster-name> --region us-west-2
 
+      # --------------------
+      # Deploy to EKS with Helm
+      # --------------------
       - name: Deploy with Helm
         run: |
           helm upgrade --install nodeapp ./helm/nodeapp --set image.repository=${{ secrets.DOCKER_IMAGE }}
-
